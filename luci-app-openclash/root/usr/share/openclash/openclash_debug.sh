@@ -62,6 +62,8 @@ cat >> "$DEBUG_LOG" <<-EOF
 
 生成时间: $LOGTIME
 插件版本: $op_version
+
+\`\`\`
 EOF
 
 cat >> "$DEBUG_LOG" <<-EOF
@@ -96,6 +98,9 @@ ca-certificates: $(ts_re "$(opkg status ca-certificates 2>/dev/null |grep 'Statu
 ipset: $(ts_re "$(opkg status ipset 2>/dev/null |grep 'Status' |awk -F ': ' '{print $2}' 2>/dev/null)")
 ip-full: $(ts_re "$(opkg status ip-full 2>/dev/null |grep 'Status' |awk -F ': ' '{print $2}' 2>/dev/null)")
 iptables-mod-tproxy: $(ts_re "$(opkg status iptables-mod-tproxy 2>/dev/null |grep 'Status' |awk -F ': ' '{print $2}' 2>/dev/null)")
+iptables-mod-extra: $(ts_re "$(opkg status iptables-mod-extra 2>/dev/null |grep 'Status' |awk -F ': ' '{print $2}' 2>/dev/null)")
+libcap: $(ts_re "$(opkg status libcap 2>/dev/null |grep 'Status' |awk -F ': ' '{print $2}' 2>/dev/null)")
+libcap-bin: $(ts_re "$(opkg status libcap-bin 2>/dev/null |grep 'Status' |awk -F ': ' '{print $2}' 2>/dev/null)")
 kmod-tun(TUN模式): $(ts_re "$(opkg status kmod-tun 2>/dev/null |grep 'Status' |awk -F ': ' '{print $2}' 2>/dev/null)")
 luci-compat(Luci-19.07): $(ts_re "$(opkg status luci-compat 2>/dev/null |grep 'Status' |awk -F ': ' '{print $2}' 2>/dev/null)")
 EOF
@@ -108,6 +113,9 @@ EOF
 if pidof clash >/dev/null; then
 cat >> "$DEBUG_LOG" <<-EOF
 运行状态: 运行中
+进程pid: $(pidof clash)
+运行权限: `getpcaps $(pidof clash)`
+运行用户: $(ps |grep "/etc/openclash/clash" |grep -v grep |awk '{print $2}' 2>/dev/null)
 EOF
 else
 cat >> "$DEBUG_LOG" <<-EOF
@@ -278,6 +286,7 @@ else
    rm -rf /tmp/yaml_general 2>/dev/null
    cat "$CHANGE_FILE" "$DNS_FILE" >> "$DEBUG_LOG"
 fi
+sed -i '/^ \{0,\}secret:/d' "$DEBUG_LOG" 2>/dev/null
 
 #firewall
 cat >> "$DEBUG_LOG" <<-EOF
@@ -371,4 +380,9 @@ cat >> "$DEBUG_LOG" <<-EOF
 
 #===================== 最近运行日志 =====================#
 EOF
-tail -n 30 "/tmp/openclash.log" >> "$DEBUG_LOG" 2>/dev/null
+tail -n 50 "/tmp/openclash.log" >> "$DEBUG_LOG" 2>/dev/null
+
+cat >> "$DEBUG_LOG" <<-EOF
+
+\`\`\`
+EOF
